@@ -50,8 +50,7 @@ def extract_pga_data():
         soup_links = soup.find_all(attrs={'href': re.compile("^/stats/stat")})
 
         years = ['2018', '2017', '2016', '2015', '2014', '2013', '2012',
-                 '2011', '2010', '2009', '2008', '2007', '2006', '2005',
-                 '2004', '2003', '2002', '2001', '2000']
+                 '2011', '2010', '2009', '2008']
 
         for year in years:
             for item in soup_links:
@@ -103,59 +102,3 @@ def transform_pga_data():
     final_df = reduce(lambda top, bottom: pd.concat([top, bottom], sort=False), dataframes_merged)
 
     final_df.to_csv('pga_stats.csv', index=False)
-
-
-def plot_feature_importances(df, threshold=0.7, table=True):
-    """
-    Plots 15 most important feature and the cumulative importance of feature.
-    Prints the number of feature needed to reach threshold cumulative importance.
-    Parameters
-    --------
-    df : dataframe
-        Dataframe of feature importances. Columns must be feature and importance
-    threshold : float, default = 0.9
-        Threshold for prining information about cumulative importances
-    Return
-    --------
-    df : dataframe
-        Dataframe ordered by feature importances with a normalized column (sums to 1)
-        and a cumulative importance column
-    """
-    # Sort feature according to importance
-    df = df.sort_values('importance', ascending=False).reset_index()
-
-    # Normalize the feature importances to add up to one
-    df['importance_normalized'] = df['importance'] / df['importance'].sum()
-    df['cumulative_importance'] = np.cumsum(df['importance_normalized'])
-
-    # Make a horizontal bar chart of feature importances
-    plt.figure(figsize=(10, 6))
-    ax = plt.subplot()
-
-    # Need to reverse the index to plot most important on top
-    ax.barh(list(reversed(list(df.index[:15]))),
-            df['importance_normalized'].head(15),
-            align='center', edgecolor='k')
-
-    # Set the yticks and labels
-    ax.set_yticks(list(reversed(list(df.index[:15]))))
-    ax.set_yticklabels(df['feature'].head(15))
-
-    # Plot labeling
-    plt.xlabel('Normalized Importance')
-    plt.title('Feature Importances')
-    plt.show()
-
-    # Cumulative importance plot
-    plt.figure(figsize=(8, 6))
-    plt.plot(list(range(len(df))), df['cumulative_importance'], 'r-')
-    plt.xlabel('Number of feature')
-    plt.ylabel('Cumulative Importance')
-    plt.title('Cumulative Feature Importance')
-    plt.show()
-
-    importance_index = np.min(np.where(df['cumulative_importance'] > threshold))
-    print('%d feature required for %0.2f of cumulative importance' % (importance_index + 1, threshold))
-
-    if table:
-        return df
