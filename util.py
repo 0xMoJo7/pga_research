@@ -6,7 +6,6 @@ import re
 from pathlib import Path
 import os
 from functools import reduce
-import matplotlib.pyplot as plt
 
 
 def make_numeric(x):
@@ -49,8 +48,7 @@ def extract_pga_data():
         soup = soup.find('div', class_="section categories")
         soup_links = soup.find_all(attrs={'href': re.compile("^/stats/stat")})
 
-        years = ['2018', '2017', '2016', '2015', '2014', '2013', '2012',
-                 '2011', '2010', '2009', '2008']
+        years = ['2019', '2018', '2017', '2016', '2015']
 
         for year in years:
             for item in soup_links:
@@ -102,3 +100,6 @@ def transform_pga_data():
     final_df = reduce(lambda top, bottom: pd.concat([top, bottom], sort=False), dataframes_merged)
 
     final_df.to_csv('pga_stats.csv', index=False)
+
+extract_pga_data()
+transform_pga_data()
